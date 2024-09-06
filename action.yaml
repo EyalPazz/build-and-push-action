@@ -1,0 +1,46 @@
+name: "Build Image And Push To ECR"
+description: "Builds a Docker image and pushes it to Amazon ECR"
+inputs:
+  ECR_REPO:
+    description: "ECR Repo"
+    required: true
+  AWS_ROLE:
+    description: "Action AWS Role (should have ECR Push Permissions)"
+    required: true
+  AWS_REGION:
+    description: "AWS Region"
+    required: false
+    default: "us-east-1"
+  BUILD_CONTEXT:
+    description: "Image Build Context"
+    required: false
+    default: "."
+outputs:
+  container_id:
+    description: "The docker container id"
+
+runs:
+  using: "composite"
+  steps:
+    - name: Check out the repository
+      uses: actions/checkout@v4
+
+    - name: Get Short SHA
+      id: vars
+      run: echo "sha_short=$(git rev-parse --short HEAD)" >> $GITHUB_OUTPUT
+
+    - name: Assume AWS Role
+      uses: aws-actions/configure-aws-credentials@v4
+      with:
+        role-to-assume: ${{ inputs.AWS_ROLE }}
+        aws-region: ${{ inputs.AWS_REGION }}
+
+    - name: Login to Amazon ECR
+      uses: aws-actions/amazon-ecr-login@v2
+
+    - name: Build and push Docker image
+      uses: docker/build-push-action@v5
+      with:
+        context: ${{ inputs.BUILD_CONTEXT }}
+        push: true
+        tags: ${{ inputs.ECR_REPO }}:${{ steps.vars.outputs.sha_short }}
