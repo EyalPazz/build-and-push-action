@@ -15,9 +15,10 @@ inputs:
     description: "Image Build Context"
     required: false
     default: "."
-outputs:
-  container_id:
-    description: "The docker container id"
+  DOCKERFILE:
+    description: "Path To Dockerfile"
+    required: false
+    default: "Dockerfile"
 
 runs:
   using: "composite"
@@ -42,5 +43,6 @@ runs:
       uses: docker/build-push-action@v5
       with:
         context: ${{ inputs.BUILD_CONTEXT }}
+        file: ${{ inputs.DOCKERFILE }}
         push: true
         tags: ${{ inputs.ECR_REPO }}:${{ steps.vars.outputs.sha_short }}
