@@ -29,6 +29,7 @@ runs:
     - name: Get Short SHA
       id: vars
       run: echo "sha_short=$(git rev-parse --short HEAD)" >> $GITHUB_OUTPUT
+      shell: bash
 
     - name: Assume AWS Role
       uses: aws-actions/configure-aws-credentials@v4
